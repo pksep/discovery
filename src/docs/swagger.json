@@ -1,0 +1,184 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a discovery service with dynamic URL registration and retrieval.",
+        "title": "Discovery Service API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:5112",
+    "basePath": "/",
+    "paths": {
+        "/get-url": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns URL for a registered endpoint, with optional parameter substitution",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Discovery"
+                ],
+                "summary": "Get URL by endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Secret Key",
+                        "name": "secret_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Endpoint name",
+                        "name": "endpoint",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional dynamic parameter",
+                        "name": "dynamic",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/route_handlers.GetURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/route_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/route_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Registers a list of endpoints with their URLs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Discovery"
+                ],
+                "summary": "Register new endpoints",
+                "parameters": [
+                    {
+                        "description": "Endpoints and Secret Key",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/route_handlers.RegisterRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Secret Key",
+                        "name": "secret_key",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/route_handlers.RegisterEndpointsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/route_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "route_handlers.Endpoints": {
+            "type": "object",
+            "properties": {
+                "endpoint": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "route_handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "route_handlers.GetURLResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "route_handlers.RegisterEndpointsResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "route_handlers.RegisterRequest": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/route_handlers.Endpoints"
+                    }
+                },
+                "secret_key": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

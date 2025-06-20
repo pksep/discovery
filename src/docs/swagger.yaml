@@ -1,0 +1,119 @@
+basePath: /
+definitions:
+  route_handlers.Endpoints:
+    properties:
+      endpoint:
+        type: string
+      url:
+        type: string
+    type: object
+  route_handlers.ErrorResponse:
+    properties:
+      message:
+        type: string
+      result:
+        type: string
+    type: object
+  route_handlers.GetURLResponse:
+    properties:
+      result:
+        type: string
+      url:
+        type: string
+    type: object
+  route_handlers.RegisterEndpointsResponse:
+    properties:
+      result:
+        type: string
+    type: object
+  route_handlers.RegisterRequest:
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/route_handlers.Endpoints'
+        type: array
+      secret_key:
+        type: string
+    type: object
+host: localhost:5112
+info:
+  contact: {}
+  description: This is a discovery service with dynamic URL registration and retrieval.
+  title: Discovery Service API
+  version: "1.0"
+paths:
+  /get-url:
+    get:
+      consumes:
+      - application/json
+      description: Returns URL for a registered endpoint, with optional parameter
+        substitution
+      parameters:
+      - description: Secret Key
+        in: query
+        name: secret_key
+        required: true
+        type: string
+      - description: Endpoint name
+        in: query
+        name: endpoint
+        required: true
+        type: string
+      - description: Optional dynamic parameter
+        in: query
+        name: dynamic
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/route_handlers.GetURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/route_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/route_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get URL by endpoint
+      tags:
+      - Discovery
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a list of endpoints with their URLs
+      parameters:
+      - description: Endpoints and Secret Key
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/route_handlers.RegisterRequest'
+      - description: Secret Key
+        in: query
+        name: secret_key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/route_handlers.RegisterEndpointsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/route_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Register new endpoints
+      tags:
+      - Discovery
+swagger: "2.0"

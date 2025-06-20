@@ -1,11 +1,12 @@
 package route_handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -13,68 +14,106 @@ var (
 	mutex  = &sync.Mutex{}
 )
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request, secertKey string) {
-	w.Header().Set("Content-Type", "application/json")
+type Endpoints struct {
+	Endpoint string `json:"endpoint"`
+	URL      string `json:"url"`
+}
 
-	if len(secertKey) <= 0 {
-		http.Error(w, `{"status:"error", "message":"seckretKey was not transmitted in Handler"}`, http.StatusBadRequest)
-	}
+type RegisterRequest struct {
+	Endpoints []Endpoints `json:"endpoints"`
+	SecretKey string      `json:"secret_key"`
+}
 
-	var request struct {
-		Endpoints map[string]string
-		SecretKey string `json:"secret_key"`
-	}
+type RegisterEndpointsResponse struct {
+	Result string `json:"result"`
+}
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"status":"error"}`, http.StatusBadRequest)
+type GetURLResponse struct {
+	Result string `json:"result"`
+	URL    string `json:"url"`
+}
+
+type ErrorResponse struct {
+	Result  string `json:"result"`
+	Message string `json:"message"`
+}
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
+// RegisterHandlerGin godoc
+// @Summary Register new endpoints
+// @Description Registers a list of endpoints with their URLs
+// @Tags Discovery
+// @Accept json
+// @Produce json
+// @Param request body RegisterRequest true "Endpoints and Secret Key"
+// @Param secret_key query string true "Secret Key"
+// @Success 200 {object} RegisterEndpointsResponse
+// @Failure 400 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /register [post]
+func RegisterHandlerGin(c *gin.Context, secretKey string) {
+	var request RegisterRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "error", "message": "Invalid JSON"})
 		return
 	}
 
-	if request.SecretKey != secertKey {
-		http.Error(w, `{"status":"error", "message":"wrong secret key"}`, http.StatusBadRequest)
+	if request.SecretKey != secretKey {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "error", "message": "Wrong secret key"})
+		return
 	}
 
 	mutex.Lock()
-	for endpoint, url := range request.Endpoints {
-		routes[endpoint] = url
+	for _, endpoint := range request.Endpoints {
+		routes[endpoint.Endpoint] = endpoint.URL
 	}
 	mutex.Unlock()
 
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"status":"ok"}`)
+	c.JSON(http.StatusOK, gin.H{"result": "ok"})
 }
 
-func GetURLHandler(w http.ResponseWriter, r *http.Request, secertKey string) {
-	if len(secertKey) <= 0 {
-		http.Error(w, `{"status:"error", "message":"seckretKey not found"}`, http.StatusBadRequest)
-	}
+// GetURLHandlerGin godoc
+// @Summary Get URL by endpoint
+// @Description Returns URL for a registered endpoint, with optional parameter substitution
+// @Tags Discovery
+// @Accept json
+// @Produce json
+// @Param secret_key query string true "Secret Key"
+// @Param endpoint query string true "Endpoint name"
+// @Param dynamic query string false "Optional dynamic parameter"
+// @Success 200 {object} GetURLResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /get-url [get]
+func GetURLHandlerGin(c *gin.Context, secretKey string) {
+	secretKeyURL := c.Query("secret_key")
+	endpoint := c.Query("endpoint")
 
-	secertKeyURL := r.URL.Query().Get("secret_key")
-
-	if secertKeyURL != secertKey {
-		http.Error(w, `{"status":"error", "message":"wrong secret key"}`, http.StatusBadRequest)
+	if secretKeyURL != secretKey {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "error", "message": "Wrong secret key"})
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	endpoint := r.URL.Query().Get("endpoint")
 
 	mutex.Lock()
 	url, exists := routes[endpoint]
 	mutex.Unlock()
 
 	if !exists {
-		http.Error(w, `{"status": "error", "message":"Endpoint not found"}`, http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"result": "error", "message": "Endpoint not found"})
 		return
 	}
 
-	for key, values := range r.URL.Query() {
-		if key != "endpoint" && len(values) > 0 {
+	// Подстановка параметров
+	for key, values := range c.Request.URL.Query() {
+		if key != "secret_key" && key != "endpoint" && len(values) > 0 {
 			url = strings.ReplaceAll(url, fmt.Sprintf("<%s>", key), values[0])
 		}
 	}
 
-	response := map[string]string{"url": url}
-
-	json.NewEncoder(w).Encode(response)
+	c.JSON(http.StatusOK, gin.H{"result": "ok", "url": url})
 }
