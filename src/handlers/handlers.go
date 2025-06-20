@@ -20,8 +20,8 @@ type Endpoints struct {
 }
 
 type RegisterRequest struct {
-	Endpoints []Endpoints `json:"endpoints"`
-	SecretKey string      `json:"secret_key"`
+	Endpoints map[string]string `json:"endpoints"`
+	SecretKey string            `json:"secret_key"`
 }
 
 type RegisterEndpointsResponse struct {
@@ -68,8 +68,8 @@ func RegisterHandlerGin(c *gin.Context, secretKey string) {
 	}
 
 	mutex.Lock()
-	for _, endpoint := range request.Endpoints {
-		routes[endpoint.Endpoint] = endpoint.URL
+	for endpointName, url := range request.Endpoints {
+		routes[endpointName] = url
 	}
 	mutex.Unlock()
 

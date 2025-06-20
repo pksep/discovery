@@ -1,12 +1,5 @@
 basePath: /
 definitions:
-  route_handlers.Endpoints:
-    properties:
-      endpoint:
-        type: string
-      url:
-        type: string
-    type: object
   route_handlers.ErrorResponse:
     properties:
       message:
@@ -29,9 +22,9 @@ definitions:
   route_handlers.RegisterRequest:
     properties:
       endpoints:
-        items:
-          $ref: '#/definitions/route_handlers.Endpoints'
-        type: array
+        additionalProperties:
+          type: string
+        type: object
       secret_key:
         type: string
     type: object

@@ -131,17 +131,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "route_handlers.Endpoints": {
-            "type": "object",
-            "properties": {
-                "endpoint": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
         "route_handlers.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -176,9 +165,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "endpoints": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/route_handlers.Endpoints"
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
                     }
                 },
                 "secret_key": {
