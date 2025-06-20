@@ -13,7 +13,7 @@ import (
 
 func main() {
 	execPath, _ := os.Getwd()
-	projectRoot := filepath.Join(execPath, "..", "..", "..")
+	projectRoot := filepath.Join(execPath)
 	envPath := filepath.Join(projectRoot, ".env")
 
 	err := godotenv.Load(envPath)

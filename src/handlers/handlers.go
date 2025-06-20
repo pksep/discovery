@@ -53,6 +53,7 @@ func GetURLHandler(w http.ResponseWriter, r *http.Request, secertKey string) {
 
 	if secertKeyURL != secertKey {
 		http.Error(w, `{"status":"error", "message":"wrong secret key"}`, http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
