@@ -1,8 +1,8 @@
 services:
   discovery:
-    build: .
+    image: discovery-discovery
     ports:
       - "5112:5112"
     restart: unless-stopped
-    volumes:
-      - ./src/.env:/app/.env
+    environment:
+      - START_MODE=docker

@@ -11,7 +11,15 @@ import (
 func GetBearerTokenAndSecretKey() (string, string) {
 	execPath, _ := os.Getwd()
 	projectRoot := filepath.Join(execPath)
-	envPath := filepath.Join(projectRoot, "/app/.env")
+
+	start_mode := os.Getenv("START_MODE")
+
+	var envPath string
+	if start_mode == "docker" {
+		envPath = filepath.Join(projectRoot, "/app/.env")
+	} else {
+		envPath = filepath.Join(projectRoot, ".env")
+	}
 
 	err := godotenv.Load(envPath)
 	if err != nil {

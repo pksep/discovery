@@ -13,6 +13,7 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /discovery-app /discovery-app
+COPY --from=builder /app/.env /app/.env
 
 EXPOSE 5112
 
