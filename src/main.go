@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"discovery/src/middlewares"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
@@ -20,6 +22,10 @@ import (
 // @host localhost:5112
 // @BasePath /
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and your token.
 func main() {
 	execPath, _ := os.Getwd()
 	projectRoot := filepath.Join(execPath)
@@ -36,24 +42,25 @@ func main() {
 		log.Printf("Error: secret key not found")
 	}
 
-	// Настраиваем Swagger
+	bearerToken := os.Getenv("BEARER_TOKEN")
+	fmt.Println(bearerToken)
+
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Host = "localhost:5112"
 
 	r := gin.Default()
 
-	// Swagger UI
+	authorized := r.Group("/", middlewares.AuthMiddleware(bearerToken))
+	{
+		authorized.POST("/register", func(c *gin.Context) {
+			route_handlers.RegisterHandlerGin(c, secretKey)
+		})
+		authorized.GET("/get-url", func(c *gin.Context) {
+			route_handlers.GetURLHandlerGin(c, secretKey)
+		})
+	}
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// Регистрация эндпоинтов
-	r.POST("/register", func(c *gin.Context) {
-		route_handlers.RegisterHandlerGin(c, secretKey)
-	})
-
-	// Получение URL
-	r.GET("/get-url", func(c *gin.Context) {
-		route_handlers.GetURLHandlerGin(c, secretKey)
-	})
 
 	fmt.Println("Discovery Service running on port 5112...")
 	r.Run(":5112")

@@ -109,4 +109,10 @@ paths:
       summary: Register new endpoints
       tags:
       - Discovery
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and your token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
