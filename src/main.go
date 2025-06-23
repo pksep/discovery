@@ -3,15 +3,12 @@ package main
 import (
 	"discovery/src/docs"
 	route_handlers "discovery/src/handlers"
+	"discovery/src/utils"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
 
 	"discovery/src/middlewares"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -27,28 +24,17 @@ import (
 // @name Authorization
 // @description Type "Bearer" followed by a space and your token.
 func main() {
-	execPath, _ := os.Getwd()
-	projectRoot := filepath.Join(execPath)
-	envPath := filepath.Join(projectRoot, ".env")
-
-	err := godotenv.Load(envPath)
-	if err != nil {
-		log.Printf("Error loading .env file: %s", err)
-		return
-	}
-
-	secretKey := os.Getenv("SECRET_KEY_DISCOVERY")
-	if len(secretKey) == 0 {
-		log.Printf("Error: secret key not found")
-	}
-
-	bearerToken := os.Getenv("BEARER_TOKEN")
-	fmt.Println(bearerToken)
 
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Host = "localhost:5112"
 
 	r := gin.Default()
+
+	secretKey, bearerToken := utils.GetBearerTokenAndSecretKey()
+
+	if secretKey == "" {
+		return
+	}
 
 	authorized := r.Group("/", middlewares.AuthMiddleware(bearerToken))
 	{
