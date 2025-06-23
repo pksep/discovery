@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"discovery/src/utils"
+	"discovery/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

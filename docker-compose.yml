@@ -1,0 +1,8 @@
+services:
+  discovery:
+    build: .
+    ports:
+      - "5112:5112"
+    restart: unless-stopped
+    volumes:
+      - ./src/.env:/app/.env

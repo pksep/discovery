@@ -52,6 +52,7 @@ type ErrorResponse struct {
 // @Param secret_key query string true "Secret Key"
 // @Success 200 {object} RegisterEndpointsResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Security BearerAuth
 // @Router /register [post]
 func RegisterHandlerGin(c *gin.Context, secretKey string) {
@@ -88,6 +89,7 @@ func RegisterHandlerGin(c *gin.Context, secretKey string) {
 // @Success 200 {object} GetURLResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Security BearerAuth
 // @Router /get-url [get]
 func GetURLHandlerGin(c *gin.Context, secretKey string) {

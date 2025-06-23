@@ -1,12 +1,12 @@
 package main
 
 import (
-	"discovery/src/docs"
-	route_handlers "discovery/src/handlers"
-	"discovery/src/utils"
+	"discovery/docs"
+	route_handlers "discovery/handlers"
+	"discovery/utils"
 	"fmt"
 
-	"discovery/src/middlewares"
+	"discovery/middlewares"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

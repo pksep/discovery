@@ -11,7 +11,7 @@ import (
 func GetBearerTokenAndSecretKey() (string, string) {
 	execPath, _ := os.Getwd()
 	projectRoot := filepath.Join(execPath)
-	envPath := filepath.Join(projectRoot, ".env")
+	envPath := filepath.Join(projectRoot, "/app/.env")
 
 	err := godotenv.Load(envPath)
 	if err != nil {
