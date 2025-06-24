@@ -3,10 +3,10 @@ package main
 import (
 	"discovery/docs"
 	route_handlers "discovery/handlers"
+	"discovery/middlewares"
 	"discovery/utils"
 	"fmt"
-
-	"discovery/middlewares"
+	"log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -56,4 +56,7 @@ func main() {
 
 	fmt.Println("Discovery Service running on port 5112...")
 	r.Run(":5112")
+	if err := r.Run(":5112"); err != nil {
+		log.Fatalf("Failed to run Discovery Service: %v", err)
+	}
 }
