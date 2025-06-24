@@ -1,0 +1,31 @@
+name: Discovery CI
+
+on:
+    push:
+        branches: [ main, canary ]
+    pull_request:
+        branches: [ main, canary ]
+
+jobs:
+    lint-test:
+        runs-on: ubunti-latest
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Set up Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: '1.24.4'
+
+        - name: Install golangci-init
+          uses: golangci/golangci-lint-action@v5
+          with:
+            version: v1.58.0
+
+        - name: Run golangci-lint
+          run: golangci-lint run ./...
+
+        - name: Run Go test
+          run: go test ./... -v
