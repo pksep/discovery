@@ -9,6 +9,9 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+        GO111MODULE: "on"
+        GOPROXY: "https://proxy.golang.org,direct"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,6 +26,7 @@ jobs:
         with:
           version: v1.58.0
           working-directory: ./src
+          args: --timeout=5m --out-format=github-actions
 
   test:
     runs-on: ubuntu-latest
