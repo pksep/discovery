@@ -1,37 +1,40 @@
 name: Discovery CI
 
 on:
-    push:
-        branches: [ main, canary ]
-    pull_request:
-        branches: [ main, canary ]
+  push:
+    branches: [ main, canary ]
+  pull_request:
+    branches: [ main, canary ]
+
 jobs:
-        lint:
-            runs-on: ubuntu-latest
-            steps:
-              - name: Checkout repository
-                uses: actions/checkout@v4
-        
-              - name: Set up Go
-                uses: actions/setup-go@v5
-                with:
-                  go-version: '1.21'
-        
-              - name: Run golangci-lint
-                uses: golangci/golangci-lint-action@v5
-                with:
-                  version: v1.58.0
-                  working-directory: ./src
-        test:
-            runs-on: ubuntu-latest
-            steps:
-                - name: Checkout repository
-                  uses: actions/checkout@v4
-                - name: Set up Go
-                  uses: actions/setup-go@v5
-                  with:
-                    go-version: '1.22'
-        
-                - name: Run Go tests
-                  run: go test ./... -v
-                  working-directory: ./src
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go (1.21 for linter)
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v5
+        with:
+          version: v1.58.0
+          working-directory: ./src
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go (1.22 for tests)
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run Go tests
+        run: go test ./... -v
+        working-directory: ./src
