@@ -55,7 +55,6 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	fmt.Println("Discovery Service running on port 5112...")
-	r.Run(":5112")
 	if err := r.Run(":5112"); err != nil {
 		log.Fatalf("Failed to run Discovery Service: %v", err)
 	}
