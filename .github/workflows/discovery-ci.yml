@@ -26,7 +26,7 @@ jobs:
         with:
           version: v1.58.0
           working-directory: ./src
-          args: --timeout=5m --out-format=github-actions
+          args: --timeout=5m --out-format=github-actions --path-prefix=./
 
   test:
     runs-on: ubuntu-latest
