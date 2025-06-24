@@ -1,13 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a discovery service with dynamic URL registration and retrieval.",
+        "description": "Discovery сервис, который принимает статические/динамические эндпоинты и может их возвращать.",
         "title": "Discovery Service API",
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:5112",
-    "basePath": "/",
     "paths": {
         "/get-url": {
             "get": {
@@ -16,7 +14,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns URL for a registered endpoint, with optional parameter substitution",
+                "description": "Возвращает URL для зарегистрированного endpoint с необязательной заменой параметров",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,22 +28,15 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Secret Key",
-                        "name": "secret_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Endpoint name",
+                        "description": "Запрашиваемый endpoint",
                         "name": "endpoint",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Optional dynamic parameter",
-                        "name": "dynamic",
+                        "description": "Динамический параметр запроса. Примеры: color=red or size=large, в прямых запросах можно использовать обычный формат",
+                        "name": "dynamic_param",
                         "in": "query"
                     }
                 ],
@@ -84,7 +75,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Registers a list of endpoints with their URLs",
+                "description": "Регистрирует переданный список endpoints",
                 "consumes": [
                     "application/json"
                 ],
@@ -97,20 +88,13 @@
                 "summary": "Register new endpoints",
                 "parameters": [
                     {
-                        "description": "Endpoints and Secret Key",
+                        "description": "Endpoints",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/route_handlers.RegisterRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Secret Key",
-                        "name": "secret_key",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -175,9 +159,6 @@
                     "additionalProperties": {
                         "type": "string"
                     }
-                },
-                "secret_key": {
-                    "type": "string"
                 }
             }
         }

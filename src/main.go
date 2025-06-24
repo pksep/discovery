@@ -8,6 +8,7 @@ import (
 
 	"discovery/middlewares"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -15,9 +16,7 @@ import (
 
 // @title Discovery Service API
 // @version 1.0
-// @description This is a discovery service with dynamic URL registration and retrieval.
-// @host localhost:5112
-// @BasePath /
+// @description Discovery сервис, который принимает статические/динамические эндпоинты и может их возвращать.
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -26,23 +25,30 @@ import (
 func main() {
 
 	docs.SwaggerInfo.BasePath = "/"
-	docs.SwaggerInfo.Host = "localhost:5112"
+	docs.SwaggerInfo.Host = "discovery.pksep.ru"
 
 	r := gin.Default()
 
-	secretKey, bearerToken := utils.GetBearerTokenAndSecretKey()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Можно указать конкретные домены
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
-	if secretKey == "" {
+	bearerToken := utils.GetBearerToken()
+
+	if bearerToken == "" {
 		return
 	}
 
 	authorized := r.Group("/", middlewares.AuthMiddleware(bearerToken))
 	{
 		authorized.POST("/register", func(c *gin.Context) {
-			route_handlers.RegisterHandlerGin(c, secretKey)
+			route_handlers.RegisterHandlerGin(c)
 		})
 		authorized.GET("/get-url", func(c *gin.Context) {
-			route_handlers.GetURLHandlerGin(c, secretKey)
+			route_handlers.GetURLHandlerGin(c)
 		})
 	}
 

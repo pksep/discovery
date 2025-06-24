@@ -1,4 +1,3 @@
-basePath: /
 definitions:
   route_handlers.ErrorResponse:
     properties:
@@ -25,13 +24,11 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      secret_key:
-        type: string
     type: object
-host: localhost:5112
 info:
   contact: {}
-  description: This is a discovery service with dynamic URL registration and retrieval.
+  description: Discovery сервис, который принимает статические/динамические эндпоинты
+    и может их возвращать.
   title: Discovery Service API
   version: "1.0"
 paths:
@@ -39,22 +36,18 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns URL for a registered endpoint, with optional parameter
-        substitution
+      description: Возвращает URL для зарегистрированного endpoint с необязательной
+        заменой параметров
       parameters:
-      - description: Secret Key
-        in: query
-        name: secret_key
-        required: true
-        type: string
-      - description: Endpoint name
+      - description: Запрашиваемый endpoint
         in: query
         name: endpoint
         required: true
         type: string
-      - description: Optional dynamic parameter
+      - description: 'Динамический параметр запроса. Примеры: color=red or size=large,
+          в прямых запросах можно использовать обычный формат'
         in: query
-        name: dynamic
+        name: dynamic_param
         type: string
       produces:
       - application/json
@@ -84,19 +77,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Registers a list of endpoints with their URLs
+      description: Регистрирует переданный список endpoints
       parameters:
-      - description: Endpoints and Secret Key
+      - description: Endpoints
         in: body
         name: request
         required: true
         schema:
           $ref: '#/definitions/route_handlers.RegisterRequest'
-      - description: Secret Key
-        in: query
-        name: secret_key
-        required: true
-        type: string
       produces:
       - application/json
       responses:

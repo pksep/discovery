@@ -12,16 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func setupRouter(secretKey string) *gin.Engine {
+func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 
 	r.POST("/register", func(c *gin.Context) {
-		RegisterHandlerGin(c, secretKey)
+		RegisterHandlerGin(c)
 	})
 
 	r.GET("/get-url", func(c *gin.Context) {
-		GetURLHandlerGin(c, secretKey)
+		GetURLHandlerGin(c)
 	})
 
 	return r
@@ -29,11 +29,9 @@ func setupRouter(secretKey string) *gin.Engine {
 
 func TestRegisterHandlerGin_Success(t *testing.T) {
 	routes = make(map[string]string)
-	secretKey := "my_secret"
-	router := setupRouter(secretKey)
+	router := setupRouter()
 
 	payload := map[string]interface{}{
-		"secret_key": secretKey,
 		"endpoints": map[string]string{
 			"test": "http://example.com/<id>",
 		},
@@ -67,16 +65,11 @@ func TestRegisterHandlerGin_Success(t *testing.T) {
 	}
 }
 
-func TestRegisterHandlerGin_WrongSecret(t *testing.T) {
-	secretKey := "my_secret"
-	router := setupRouter(secretKey)
+func TestRegisterHandlerGin_ErrorEmptyEndpoints(t *testing.T) {
+	routes = make(map[string]string)
+	router := setupRouter()
 
-	payload := map[string]interface{}{
-		"secret_key": "wrong_key",
-		"endpoints": map[string]string{
-			"test": "http://example.com/<id>",
-		},
-	}
+	payload := map[string]interface{}{}
 
 	body, _ := json.Marshal(payload)
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(body))
@@ -91,17 +84,26 @@ func TestRegisterHandlerGin_WrongSecret(t *testing.T) {
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("expected status 400, got %d", resp.StatusCode)
 	}
+
+	data, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Fatalf("failed to read response body: %v", err)
+	}
+
+	if !strings.Contains(string(data), `error`) {
+		t.Errorf("expected error response, got %s", string(data))
+	}
 }
 
 func TestGetURLHandlerGin_Success(t *testing.T) {
 	routes = map[string]string{
-		"test": "http://example.com/<id>",
+		"test": "http://example.com/<id: int>",
 	}
 
-	secretKey := "my_secret"
-	router := setupRouter(secretKey)
+	router := setupRouter()
 
-	req, _ := http.NewRequest(http.MethodGet, "/get-url?secret_key=my_secret&endpoint=test&id=42", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/get-url?endpoint=test&id=42", nil)
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -123,36 +125,14 @@ func TestGetURLHandlerGin_Success(t *testing.T) {
 	}
 }
 
-func TestGetURLHandlerGin_WrongSecret(t *testing.T) {
-	routes = map[string]string{
-		"test": "http://example.com/<id>",
-	}
-
-	secretKey := "my_secret"
-	router := setupRouter(secretKey)
-
-	req, _ := http.NewRequest(http.MethodGet, "/get-url?secret_key=wrong_secret&endpoint=test&id=42", nil)
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	resp := w.Result()
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected status 400, got %d", resp.StatusCode)
-	}
-}
-
 func TestGetURLHandlerGin_EndpointNotFound(t *testing.T) {
 	routes = map[string]string{
 		"test": "http://example.com/<id>",
 	}
 
-	secretKey := "my_secret"
-	router := setupRouter(secretKey)
+	router := setupRouter()
 
-	req, _ := http.NewRequest(http.MethodGet, "/get-url?secret_key=my_secret&endpoint=unknown", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/get-url?endpoint=unknown", nil)
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)

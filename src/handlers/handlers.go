@@ -2,7 +2,9 @@ package route_handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -21,7 +23,11 @@ type Endpoints struct {
 
 type RegisterRequest struct {
 	Endpoints map[string]string `json:"endpoints"`
-	SecretKey string            `json:"secret_key"`
+}
+
+type GetEndpointDynamicRequest struct {
+	Endpoint string `json:"endpoint"`
+	Dynamic  string `json:"dynamic"`
 }
 
 type RegisterEndpointsResponse struct {
@@ -44,18 +50,17 @@ type ErrorResponse struct {
 
 // RegisterHandlerGin godoc
 // @Summary Register new endpoints
-// @Description Registers a list of endpoints with their URLs
+// @Description Регистрирует переданный список endpoints
 // @Tags Discovery
 // @Accept json
 // @Produce json
-// @Param request body RegisterRequest true "Endpoints and Secret Key"
-// @Param secret_key query string true "Secret Key"
+// @Param request body RegisterRequest true "Endpoints"
 // @Success 200 {object} RegisterEndpointsResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Security BearerAuth
 // @Router /register [post]
-func RegisterHandlerGin(c *gin.Context, secretKey string) {
+func RegisterHandlerGin(c *gin.Context) {
 	var request RegisterRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -63,8 +68,8 @@ func RegisterHandlerGin(c *gin.Context, secretKey string) {
 		return
 	}
 
-	if request.SecretKey != secretKey {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "error", "message": "Wrong secret key"})
+	if len(request.Endpoints) == 0 || request.Endpoints == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "error", "message": "Endpoints is empty"})
 		return
 	}
 
@@ -79,27 +84,20 @@ func RegisterHandlerGin(c *gin.Context, secretKey string) {
 
 // GetURLHandlerGin godoc
 // @Summary Get URL by endpoint
-// @Description Returns URL for a registered endpoint, with optional parameter substitution
+// @Description Возвращает URL для зарегистрированного endpoint с необязательной заменой параметров
 // @Tags Discovery
 // @Accept json
 // @Produce json
-// @Param secret_key query string true "Secret Key"
-// @Param endpoint query string true "Endpoint name"
-// @Param dynamic query string false "Optional dynamic parameter"
+// @Param endpoint query string true "Запрашиваемый endpoint"
+// @Param dynamic_param query string false "Динамический параметр запроса. Примеры: color=red or size=large, в прямых запросах можно использовать обычный формат"
 // @Success 200 {object} GetURLResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Security BearerAuth
 // @Router /get-url [get]
-func GetURLHandlerGin(c *gin.Context, secretKey string) {
-	secretKeyURL := c.Query("secret_key")
+func GetURLHandlerGin(c *gin.Context) {
 	endpoint := c.Query("endpoint")
-
-	if secretKeyURL != secretKey {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "error", "message": "Wrong secret key"})
-		return
-	}
 
 	mutex.Lock()
 	url, exists := routes[endpoint]
@@ -110,10 +108,17 @@ func GetURLHandlerGin(c *gin.Context, secretKey string) {
 		return
 	}
 
-	// Подстановка параметров
 	for key, values := range c.Request.URL.Query() {
-		if key != "secret_key" && key != "endpoint" && len(values) > 0 {
-			url = strings.ReplaceAll(url, fmt.Sprintf("<%s>", key), values[0])
+		if key != "endpoint" && len(values) > 0 {
+			log.Printf("url: %s, key: %s, value: %s", url, key, values[0])
+			if strings.Contains(values[0], "=") {
+				splitedDynamicParam := strings.Split(values[0], "=")
+
+				key = splitedDynamicParam[0]
+				values[0] = splitedDynamicParam[1]
+			}
+			re := regexp.MustCompile(fmt.Sprintf(`<%s:[^>]+>`, key))
+			url = re.ReplaceAllString(url, values[0])
 		}
 	}
 

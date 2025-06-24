@@ -10,7 +10,7 @@ import (
 func AuthMiddleware(BearerToken string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "error", "message": "Authorization header missing or invalid"})
 			c.Abort()
 			return

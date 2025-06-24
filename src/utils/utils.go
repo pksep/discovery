@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func GetBearerTokenAndSecretKey() (string, string) {
+func GetBearerToken() string {
 	execPath, _ := os.Getwd()
 	projectRoot := filepath.Join(execPath)
 
@@ -24,21 +24,15 @@ func GetBearerTokenAndSecretKey() (string, string) {
 	err := godotenv.Load(envPath)
 	if err != nil {
 		log.Printf("Error loading .env file: %s", err)
-		return "", ""
-	}
-
-	secretKey := os.Getenv("SECRET_KEY_DISCOVERY")
-	if len(secretKey) == 0 {
-		log.Printf("Error: SECRET_KEY_DISCOVERY not found")
-		return "", ""
+		return ""
 	}
 
 	bearerToken := os.Getenv("BEARER_TOKEN")
 
-	if len(secretKey) == 0 {
+	if len(bearerToken) == 0 {
 		log.Printf("Error: BEARER_TOKEN key not found")
-		return "", ""
+		return ""
 	}
 
-	return secretKey, bearerToken
+	return bearerToken
 }

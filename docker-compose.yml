@@ -1,6 +1,6 @@
 services:
   discovery:
-    image: discovery-discovery
+    build: .
     ports:
       - "5112:5112"
     restart: unless-stopped

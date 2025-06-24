@@ -22,7 +22,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns URL for a registered endpoint, with optional parameter substitution",
+                "description": "Возвращает URL для зарегистрированного endpoint с необязательной заменой параметров",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,22 +36,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Secret Key",
-                        "name": "secret_key",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Endpoint name",
+                        "description": "Запрашиваемый endpoint",
                         "name": "endpoint",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Optional dynamic parameter",
-                        "name": "dynamic",
+                        "description": "Динамический параметр запроса. Примеры: color=red or size=large, в прямых запросах можно использовать обычный формат",
+                        "name": "dynamic_param",
                         "in": "query"
                     }
                 ],
@@ -90,7 +83,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Registers a list of endpoints with their URLs",
+                "description": "Регистрирует переданный список endpoints",
                 "consumes": [
                     "application/json"
                 ],
@@ -103,20 +96,13 @@ const docTemplate = `{
                 "summary": "Register new endpoints",
                 "parameters": [
                     {
-                        "description": "Endpoints and Secret Key",
+                        "description": "Endpoints",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/route_handlers.RegisterRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Secret Key",
-                        "name": "secret_key",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -181,9 +167,6 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
-                },
-                "secret_key": {
-                    "type": "string"
                 }
             }
         }
@@ -201,11 +184,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:5112",
-	BasePath:         "/",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Discovery Service API",
-	Description:      "This is a discovery service with dynamic URL registration and retrieval.",
+	Description:      "Discovery сервис, который принимает статические/динамические эндпоинты и может их возвращать.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
